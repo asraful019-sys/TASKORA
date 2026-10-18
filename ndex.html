@@ -1,3 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TASKORA</title>
+<style>
+body{font-family:Arial;background:#f1f5f9;margin:0;color:#172033}
+header{background:#12336b;color:white;text-align:center;padding:24px}
+main{max-width:650px;margin:20px auto;padding:15px}
+.task{background:white;margin:12px 0;padding:18px;border-radius:12px}
+.reward{color:green;font-weight:bold}
+</style>
+</head>
+<body>
+<header>
 <h1>TASKORA</h1>
-<p>Welcome to TASKORA!</p>
-<p>Complete tasks and earn rewards.</p>
+<p>Complete tasks and earn rewards</p>
+</header>
+<main>
+<h2>Available Tasks</h2>
+<p id="message">Loading tasks...</p>
+<div id="tasks"></div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "YOUR_SUPABASE_PROJECT_URL";
+const SUPABASE_PUBLISHABLE_KEY = "YOUR_SUPABASE_PUBLISHABLE_KEY";
+const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+
+async function loadTasks(){
+const message=document.getElementById("message");
+const container=document.getElementById("tasks");
+const {data,error}=await db.from("tasks")
+.select("id,title,description,reward,slots")
+.eq("status","published");
+if(error){message.textContent="Could not load tasks.";return;}
+message.textContent=data.length?"":"No tasks available.";
+data.forEach(task=>{
+const card=document.createElement("div");
+card.className="task";
+const title=document.createElement("h3");
+title.textContent=task.title;
+const desc=document.createElement("p");
+desc.textContent=task.description||"";
+const reward=document.createElement("p");
+reward.className="reward";
+reward.textContent="Reward: "+task.reward;
+card.append(title,desc,reward);
+container.appendChild(card);
+});
+}
+if(SUPABASE_URL.startsWith("https://")&&!SUPABASE_PUBLISHABLE_KEY.startsWith("YOUR_")){
+loadTasks();
+}else{
+document.getElementById("message").textContent="TASKORA setup is not finished yet.";
+}
+</script>
+</body>
+</html>
